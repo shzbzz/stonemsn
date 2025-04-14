@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8">
+  <title>Kamenorezački AI Kalkulator</title>
+
+  <!-- Google Font: Open Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link 
+    href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" 
+    rel="stylesheet"
+  >
+
+  <style>
+    /*********** Opšti stil ************/
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Open Sans', sans-serif;
+      background-color: #2f2f2f; 
+      color: #FFD700;
+      text-align: center;  /* Da centriramo h2 i dr. */
+    }
+    h2 {
+      margin: 20px 0;
+      font-size: 36px;
+    }
+    .content {
+      max-width: 1000px;
+      margin: 0 auto;
+      text-align: left; 
+      padding: 20px;
+    }
+    .section { margin-bottom: 20px; }
+    .hidden { display: none; }
+
+    /*********** Početni ekran ************/
+    #pocetniMeni {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+      margin: 30px auto;
+      flex-wrap: wrap; /* da se prilagodi uskom ekranu */
+    }
+    .leftMenu {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .bigButton {
+      font-size: 18px;
+      padding: 12px 24px;
+      background-color: #444;
+      color: #FFD700;
+      border: 2px solid #FFD700;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: center;
+      width: 180px; 
+    }
+    .bigButton:hover {
+      background-color: #555;
+    }
+
+    .rightSide {
+      position: relative; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .rightSide img#mainImage {
+      max-width: 450px;
+      height: auto;
+      border: 2px solid #FFD700;
+      border-radius: 4px;
+    }
+    /* Gear icon (zupčanik) */
+    .gearIcon {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+    }
+    .gearIcon:hover {
+      filter: brightness(1.3);
+    }
+
+    /*********** Tabela rezultata (obračun) ************/
+    table {
+      border: 1px solid #FFD700;
+      border-collapse: collapse;
+      width: 100%;
+      max-width: 900px;
+      margin: 20px auto;
+    }
+    th, td {
+      border: 1px solid #FFD700;
+      padding: 5px;
+      text-align: center;
+    }
+    th {
+      background-color: #444;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="content">
+  <h2>Kamenorezački AI Kalkulator</h2>
+
+  <!-- POCETNI EKRAN -->
+  <div class="section" id="pocetniMeni">
+    <!-- Leva kolona: 3 dugmeta (Građevina, Spomenici, Katalog) -->
+    <div class="leftMenu">
+      <button class="bigButton" onclick="prikaziSekciju('gradjevinaMeni')">
+        Građevina
+      </button>
+      <button class="bigButton" onclick="alert('Modul za spomenike još nije dostupan')">
+        Spomenici
+      </button>
+      <button class="bigButton" onclick="alert('Ovde ćeš otvoriti Katalog...')">
+        Katalog
+      </button>
+    </div>
+
+    <!-- Desna kolona: slika "flor.png" + gear icon "gear.png" -->
+    <div class="rightSide">
+      <img 
+        src="gear.png" 
+        alt="Podesavanja" 
+        class="gearIcon" 
+        onclick="otvoriPodesavanja()" 
+      >
+      <img 
+        src="flor.png" 
+        id="mainImage" 
+        alt="Flor slika"
+      >
+    </div>
+  </div>
+
+  <!-- Meni Građevina -->
+  <div class="section hidden" id="gradjevinaMeni">
+    <h3>Građevina</h3>
+    <button onclick="prikaziSekciju('klupiceSekcija')">Klupice</button>
+    <button onclick="prikaziSekciju('stepeniceSekcija')">Stepenice</button>
+    <button onclick="restartujProgram()">⬅ Nazad</button>
+  </div>
+
+  <!-- ============== KLUPICE ============== -->
+  <div class="section hidden" id="klupiceSekcija">
+    <h3>Klupice</h3>
+
+    <p>Izaberite kamen i debljinu:</p>
+    <select id="kamenKlupice">
+      <option value="BiancoSardo">Bianco Sardo</option>
+      <option value="Rojal">Rojal</option>
+      <option value="Bengal">Bengal</option>
+      <option value="Vizag">Vizag</option>
+      <option value="RedAfrica">Red Africa</option>
+      <option value="Labrador">Labrador</option>
+    </select>
+
+    <select id="debljinaKlupice">
+      <option value="2">2 cm</option>
+      <option value="3">3 cm</option>
+      <option value="4">4 cm</option>
+      <option value="5">5 cm</option>
+      <option value="7">7 cm</option>
+      <option value="8">8 cm</option>
+      <option value="10">10 cm</option>
+      <option value="12">12 cm</option>
+    </select>
+
+    <br><br>
+    <p>Unesite broj klupica i koliko ih ima istu dimenziju:</p>
+    <label>Ukupno klupica:</label>
+    <input type="number" id="kTotal" min="1" max="9999" value="1"><br>
+
+    <label>Koliko istih dimenzija?</label>
+    <input type="number" id="kGroup" min="0" max="9999" value="0"><br>
+
+    <label>Falc:</label>
+    <select id="falcMode">
+      <option value="allNo">Sve bez falca</option>
+      <option value="allYes">Sve sa falcom</option>
+      <option value="perKlupica">Za svaku klupicu posebno</option>
+    </select><br>
+
+    <button onclick="generisiKlupice()">Generiši klupice</button>
+
+    <div id="kGroupFields"></div>
+    <div id="kLeftoverFields"></div>
+
+    <button onclick="izracunajKlupice()">Izračunaj klupice</button>
+    <button onclick="restartujProgram()">⬅ Početak</button>
+
+    <div id="rezultatKlupice"></div>
+  </div>
+
+  <!-- ============== STEPENICE - KORAK 1 ============== -->
+  <div class="section hidden" id="stepeniceSekcija">
+    <h3>Stepenice – izbor kamena</h3>
+
+    <label>Kamen gazišta:</label>
+    <select id="kamenGazista">
+      <option value="BiancoSardo">Bianco Sardo</option>
+      <option value="Rojal">Rojal</option>
+      <option value="Bengal">Bengal</option>
+      <option value="Vizag">Vizag</option>
+      <option value="RedAfrica">Red Africa</option>
+      <option value="Labrador">Labrador</option>
+    </select>
+    <label>Debljina:</label>
+    <select id="debljinaGazista">
+      <option value="2">2 cm</option>
+      <option value="3">3 cm</option>
+      <option value="4">4 cm</option>
+      <option value="5">5 cm</option>
+      <option value="7">7 cm</option>
+      <option value="8">8 cm</option>
+      <option value="10">10 cm</option>
+      <option value="12">12 cm</option>
+    </select><br><br>
+
+    <label>Da li ima čela?</label>
+    <select id="imaCela" onchange="document.getElementById('stepCela').style.display=(this.value==='da'?'block':'none');">
+      <option value="da">Da</option>
+      <option value="ne">Ne</option>
+    </select><br>
+
+    <div id="stepCela" style="display:block;">
+      <label>Kamen čela:</label>
+      <select id="kamenCela">
+        <option value="BiancoSardo">Bianco Sardo</option>
+        <option value="Rojal">Rojal</option>
+        <option value="Bengal">Bengal</option>
+        <option value="Vizag">Vizag</option>
+        <option value="RedAfrica">Red Africa</option>
+        <option value="Labrador">Labrador</option>
+      </select>
+      <label>Debljina čela:</label>
+      <select id="debljinaCela">
+        <option value="2">2 cm</option>
+        <option value="3">3 cm</option>
+        <option value="4">4 cm</option>
+        <option value="5">5 cm</option>
+        <option value="7">7 cm</option>
+        <option value="8">8 cm</option>
+        <option value="10">10 cm</option>
+        <option value="12">12 cm</option>
+      </select><br><br>
+    </div>
+
+    <label>Da li ima podest?</label>
+    <select id="imaPodest" onchange="document.getElementById('stepPodest').style.display=(this.value==='da'?'block':'none');">
+      <option value="da">Da</option>
+      <option value="ne">Ne</option>
+    </select><br>
+
+    <div id="stepPodest" style="display:block;">
+      <label>Kamen podest:</label>
+      <select id="kamenPodest">
+        <option value="BiancoSardo">Bianco Sardo</option>
+        <option value="Rojal">Rojal</option>
+        <option value="Bengal">Bengal</option>
+        <option value="Vizag">Vizag</option>
+        <option value="RedAfrica">Red Africa</option>
+        <option value="Labrador">Labrador</option>
+      </select>
+      <label>Debljina:</label>
+      <select id="debljinaPodest">
+        <option value="2">2 cm</option>
+        <option value="3">3 cm</option>
+        <option value="4">4 cm</option>
+        <option value="5">5 cm</option>
+        <option value="7">7 cm</option>
+        <option value="8">8 cm</option>
+        <option value="10">10 cm</option>
+        <option value="12">12 cm</option>
+      </select><br><br>
+    </div>
+
+    <label>Da li ima cokl?</label>
+    <select id="imaCokl" onchange="toggleCoklOptions(this.value)">
+      <option value="da">Da</option>
+      <option value="ne">Ne</option>
+    </select><br>
+
+    <div id="stepCokl" style="display:block;">
+      <label>Kamen cokl:</label>
+      <select id="kamenCokl">
+        <option value="BiancoSardo">Bianco Sardo</option>
+        <option value="Rojal">Rojal</option>
+        <option value="Bengal">Bengal</option>
+        <option value="Vizag">Vizag</option>
+        <option value="RedAfrica">Red Africa</option>
+        <option value="Labrador">Labrador</option>
+      </select>
+      <label>Debljina:</label>
+      <select id="debljinaCokl">
+        <option value="2">2 cm</option>
+        <option value="3">3 cm</option>
+        <option value="4">4 cm</option>
+        <option value="5">5 cm</option>
+        <option value="7">7 cm</option>
+        <option value="8">8 cm</option>
+        <option value="10">10 cm</option>
+        <option value="12">12 cm</option>
+      </select>
+      <br><br>
+
+      <label>Način obračuna cokla?</label>
+      <select id="coklNacin" onchange="toggleCoklManual(this.value)">
+        <option value="auto">Automatski</option>
+        <option value="manual">Ručno</option>
+      </select><br>
+
+      <div id="coklManualDiv" style="display:none;">
+        <label>Unesi dužinu cokla (cm):</label>
+        <input type="number" id="coklManualLength" min="1" max="999999" value="100">
+        <br><br>
+      </div>
+
+      <label>Cokl sa jedne ili dvije strane?</label>
+      <select id="coklSides">
+        <option value="1">Jedna strana</option>
+        <option value="2">Dvije strane</option>
+      </select><br>
+
+      <label>Visina cokla (cm):</label>
+      <input type="number" id="coklVisina" min="1" max="9999" value="10">
+      <br><br>
+    </div>
+
+    <button onclick="prikaziSekciju('stepeniceDimenzijeSekcija')">Nastavi</button>
+    <button onclick="restartujProgram()">⬅ Početak</button>
+  </div>
+
+  <!-- ============== STEPENICE - KORAK 2: UNOS DIMENZIJA ============== -->
+  <div class="section hidden" id="stepeniceDimenzijeSekcija">
+    <h3>Unos dimenzija stepenica</h3>
+
+    <label>Ukupno gazišta:</label>
+    <input type="number" id="gTotal" min="1" max="9999" value="1"><br>
+    <label>Koliko njih imaju istu dimenziju?</label>
+    <input type="number" id="gGroup" min="0" max="9999" value="0"><br>
+    <button onclick="generisiGazistaPolja()">Generiši gazišta</button>
+    <div id="gGroupFields"></div>
+    <div id="gLeftoverFields"></div>
+    <hr>
+
+    <div id="celaSekcija" style="display:none;">
+      <h4>Čela</h4>
+      <label>Ukupno čela:</label>
+      <input type="number" id="cTotal" min="1" max="9999" value="1"><br>
+      <label>Koliko njih imaju istu dimenziju?</label>
+      <input type="number" id="cGroup" min="0" max="9999" value="0"><br>
+      <button onclick="generisiCelaPolja()">Generiši čela</button>
+      <div id="cGroupFields"></div>
+      <div id="cLeftoverFields"></div>
+      <hr>
+    </div>
+
+    <div id="podestSekcija" style="display:none;">
+      <h4>Podest</h4>
+      <label>Ukupno podesta:</label>
+      <input type="number" id="pTotal" min="1" max="9999" value="1"><br>
+      <label>Koliko njih imaju istu dimenziju?</label>
+      <input type="number" id="pGroup" min="0" max="9999" value="0"><br>
+      <button onclick="generisiPodestPolja()">Generiši podeste</button>
+      <div id="pGroupFields"></div>
+      <div id="pLeftoverFields"></div>
+      <hr>
+    </div>
+
+    <button onclick="izracunajStepenice()">Izračunaj stepenice</button>
+    <button onclick="restartujProgram()">⬅ Početak</button>
+
+    <div id="rezultatStepenice"></div>
+  </div>
+
+</div><!-- end .content -->
+
+<script>
+/****************** POMOĆNE FUNKCIJE ******************/
+function prikaziSekciju(id) {
+  let sekcije = document.querySelectorAll('.section');
+  sekcije.forEach(s => s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+function restartujProgram() {
+  location.reload();
+}
+function otvoriPodesavanja() {
+  // Otvara “podesavanja.html” u novom tabu
+  window.open('podesavanja.html', '_blank');
+}
+
+/****************** KLUPICE: parcijalno grupisanje + falc ******************/
+function generisiKlupice() {
+  let kTotal = parseInt(document.getElementById('kTotal').value) || 0;
+  let kGroup = parseInt(document.getElementById('kGroup').value) || 0;
+  let falcMode = document.getElementById('falcMode').value;
+
+  let groupDiv = document.getElementById('kGroupFields');
+  let leftoverDiv = document.getElementById('kLeftoverFields');
+  groupDiv.innerHTML = '';
+  leftoverDiv.innerHTML = '';
+
+  if (kGroup > 0) {
+    let falcHTML = '';
+    if (falcMode === 'perKlupica') {
+      falcHTML = `Falc: <input type="checkbox" class="kGroupFalc"><br><br>`;
+    }
+    groupDiv.innerHTML = `
+      <h4>Grupna klupica (${kGroup} kom.)</h4>
+      Dužina (cm): <input type="number" class="kGroupDuzina" min="1" max="9999"><br>
+      Širina (cm): <input type="number" class="kGroupSirina" min="1" max="9999"><br>
+      ${falcHTML}
+    `;
+  }
+
+  let leftover = kTotal - kGroup;
+  if (leftover > 0) {
+    leftoverDiv.innerHTML = `<h4>Ostalih ${leftover} klupica (različitih dimenzija)</h4>`;
+    for (let i = 0; i < leftover; i++) {
+      let row = document.createElement('div');
+      let falcHTML = '';
+      if (falcMode === 'perKlupica') {
+        falcHTML = `Falc: <input type="checkbox" class="kLeftoverFalc">`;
+      }
+      row.innerHTML = `
+        <p><b>Klupica ${i + 1}</b></p>
+        Dužina (cm): <input type="number" class="kLeftoverDuzina" min="1" max="9999"><br>
+        Širina (cm): <input type="number" class="kLeftoverSirina" min="1" max="9999"><br>
+        ${falcHTML}
+        <br>
+      `;
+      leftoverDiv.appendChild(row);
+    }
+  }
+}
+
+function izracunajKlupice() {
+  let kamen = document.getElementById('kamenKlupice').value;
+  let debljina = document.getElementById('debljinaKlupice').value;
+  let cenaPoM2 = cene[kamen][debljina];
+
+  let kTotal = parseInt(document.getElementById('kTotal').value) || 0;
+  let kGroup = parseInt(document.getElementById('kGroup').value) || 0;
+  let falcMode = document.getElementById('falcMode').value;
+  let leftover = kTotal - kGroup;
+
+  let html = `
+    <table>
+      <tr>
+        <th>Kamen</th>
+        <th>Debljina</th>
+        <th>Klupica</th>
+        <th>Dimenzije</th>
+        <th>Količina</th>
+        <th>Falc</th>
+        <th>Površina (m²)</th>
+        <th>Cijena (KM)</th>
+      </tr>
+  `;
+  let ukupno = 0;
+
+  // Grupna klupica
+  if (kGroup > 0) {
+    let dVal = parseFloat(document.querySelector('.kGroupDuzina')?.value) || 0;
+    let sVal = parseFloat(document.querySelector('.kGroupSirina')?.value) || 0;
+    let m2Jedna = (dVal * sVal) / 10000;
+    let m2Ukup = m2Jedna * kGroup;
+    let cijena = m2Ukup * cenaPoM2;
+    ukupno += cijena;
+
+    let falcStatus = 'Ne';
+    if (falcMode === 'allYes') {
+      falcStatus = 'Da';
+    } else if (falcMode === 'perKlupica') {
+      let chk = document.querySelector('.kGroupFalc');
+      if (chk && chk.checked) {
+        falcStatus = 'Da';
+      }
+    }
+
+    html += `
+      <tr>
+        <td>${kamen}</td>
+        <td>${debljina} cm</td>
+        <td>Grupna (${kGroup} kom.)</td>
+        <td>${dVal} x ${sVal} cm</td>
+        <td>${kGroup}</td>
+        <td>${falcStatus}</td>
+        <td>${m2Ukup.toFixed(2)}</td>
+        <td>${cijena.toFixed(2)}</td>
+      </tr>
+    `;
+  }
+
+  // Ostale klupice
+  if (leftover > 0) {
+    let dArr = document.getElementsByClassName('kLeftoverDuzina');
+    let sArr = document.getElementsByClassName('kLeftoverSirina');
+    let fArr = document.getElementsByClassName('kLeftoverFalc');
+
+    for (let i = 0; i < leftover; i++) {
+      let dd = parseFloat(dArr[i].value) || 0;
+      let ss = parseFloat(sArr[i].value) || 0;
+      let m2 = (dd * ss) / 10000;
+      let cijena = m2 * cenaPoM2;
+      ukupno += cijena;
+
+      let falcStatus = 'Ne';
+      if (falcMode === 'allYes') {
+        falcStatus = 'Da';
+      } else if (falcMode === 'perKlupica' && fArr[i].checked) {
+        falcStatus = 'Da';
+      }
+
+      html += `
+        <tr>
+          <td>${kamen}</td>
+          <td>${debljina} cm</td>
+          <td>Klupica ${i + 1}</td>
+          <td>${dd} x ${ss} cm</td>
+          <td>1</td>
+          <td>${falcStatus}</td>
+          <td>${m2.toFixed(2)}</td>
+          <td>${cijena.toFixed(2)}</td>
+        </tr>
+      `;
+    }
+  }
+
+  // Ukupno
+  html += `
+    <tr>
+      <td colspan="7" style="text-align:right"><b>Ukupno</b></td>
+      <td><b>${ukupno.toFixed(2)} KM</b></td>
+    </tr>
+  </table>
+  `;
+  document.getElementById('rezultatKlupice').innerHTML = html;
+}
+
+/****************** STEPENICE ******************/
+/* Gazišta */
+function generisiGazistaPolja() {
+  let gTotal = parseInt(document.getElementById('gTotal').value)||0;
+  let gGroup = parseInt(document.getElementById('gGroup').value)||0;
+  let leftover = gTotal - gGroup;
+
+  let groupDiv = document.getElementById('gGroupFields');
+  let leftoverDiv = document.getElementById('gLeftoverFields');
+  groupDiv.innerHTML='';
+  leftoverDiv.innerHTML='';
+
+  if(gGroup>0){
+    groupDiv.innerHTML=`
+      <p><b>${gGroup} gazišta istih dimenzija</b></p>
+      Dužina (cm): <input type="number" class="gGroupDuzina" min="1" max="9999">
+      Dubina (cm): <input type="number" class="gGroupDubina" min="1" max="9999">
+      <br><br>
+    `;
+  }
+  if(leftover>0){
+    leftoverDiv.innerHTML = `<p><b>${leftover} gazišta različitih dimenzija</b></p>`;
+    for(let i=0;i<leftover;i++){
+      let row=document.createElement('div');
+      row.innerHTML=`
+        Gazište ${i+1}:<br>
+        Dužina (cm): <input type="number" class="gLeftoverDuzina" min="1" max="9999">
+        Dubina (cm): <input type="number" class="gLeftoverDubina" min="1" max="9999">
+        <br><br>
+      `;
+      leftoverDiv.appendChild(row);
+    }
+  }
+}
+/* Čela */
+function generisiCelaPolja() {
+  let cTotal=parseInt(document.getElementById('cTotal').value)||0;
+  let cGroup=parseInt(document.getElementById('cGroup').value)||0;
+  let leftover = cTotal-cGroup;
+
+  let groupDiv=document.getElementById('cGroupFields');
+  let leftoverDiv=document.getElementById('cLeftoverFields');
+  groupDiv.innerHTML='';
+  leftoverDiv.innerHTML='';
+
+  if(cGroup>0){
+    groupDiv.innerHTML=`
+      <p><b>${cGroup} čela istih dimenzija</b></p>
+      Visina(cm): <input type="number" class="cGroupVisina" min="1" max="9999">
+      Dužina(cm): <input type="number" class="cGroupDuzina" min="1" max="9999">
+      <br><br>
+    `;
+  }
+  if(leftover>0){
+    for(let i=0;i< leftover;i++){
+      let row=document.createElement('div');
+      row.innerHTML=`
+        Čelo ${i+1}:<br>
+        Visina(cm): <input type="number" class="cLeftoverVisina" min="1" max="9999">
+        Dužina(cm): <input type="number" class="cLeftoverDuzina" min="1" max="9999">
+        <br><br>
+      `;
+      leftoverDiv.appendChild(row);
+    }
+  }
+}
+/* Podest */
+function generisiPodestPolja() {
+  let pTotal=parseInt(document.getElementById('pTotal').value)||0;
+  let pGroup=parseInt(document.getElementById('pGroup').value)||0;
+  let leftover = pTotal-pGroup;
+
+  let groupDiv=document.getElementById('pGroupFields');
+  let leftoverDiv=document.getElementById('pLeftoverFields');
+  groupDiv.innerHTML='';
+  leftoverDiv.innerHTML='';
+
+  if(pGroup>0){
+    groupDiv.innerHTML=`
+      <p><b>${pGroup} podesta istih dimenzija</b></p>
+      Dužina(cm): <input type="number" class="pGroupDuzina" min="1" max="9999">
+      Širina(cm): <input type="number" class="pGroupSirina" min="1" max="9999">
+      <br><br>
+    `;
+  }
+  if(leftover>0){
+    for(let i=0;i< leftover;i++){
+      let row=document.createElement('div');
+      row.innerHTML=`
+        Podest ${i+1}:<br>
+        Dužina(cm): <input type="number" class="pLeftoverDuzina" min="1" max="9999">
+        Širina(cm): <input type="number" class="pLeftoverSirina" min="1" max="9999">
+        <br><br>
+      `;
+      leftoverDiv.appendChild(row);
+    }
+  }
+}
+
+/****************** GLAVNI OBRAČUN STEpenICE ******************/
+function izracunajStepenice() {
+  let kamenGazista=document.getElementById('kamenGazista').value;
+  let debljinaGazista=document.getElementById('debljinaGazista').value;
+  let cenaPoM2Gazista=cene[kamenGazista][debljinaGazista];
+
+  let imaCela=(document.getElementById('imaCela').value==='da');
+  let cenaPoM2Cela=0;
+  if(imaCela){
+    let kamenCela=document.getElementById('kamenCela').value;
+    let debljinaCela=document.getElementById('debljinaCela').value;
+    cenaPoM2Cela=cene[kamenCela][debljinaCela];
+  }
+
+  let imaPodest=(document.getElementById('imaPodest').value==='da');
+  let cenaPoM2Podest=0;
+  if(imaPodest){
+    let kamenPodest=document.getElementById('kamenPodest').value;
+    let debljinaPodest=document.getElementById('debljinaPodest').value;
+    cenaPoM2Podest=cene[kamenPodest][debljinaPodest];
+  }
+
+  let imaCokl=(document.getElementById('imaCokl').value==='da');
+  let coklNacin='auto';
+  let cenaPoM2Cokl=0;
+  let coklSides=1;
+  let coklVisinaVal=0;
+  if(imaCokl){
+    coklNacin=document.getElementById('coklNacin').value;
+    coklSides=parseInt(document.getElementById('coklSides').value)||1;
+    coklVisinaVal=parseFloat(document.getElementById('coklVisina').value)||0;
+
+    let kamenCokl=document.getElementById('kamenCokl').value;
+    let debljinaCokl=document.getElementById('debljinaCokl').value;
+    cenaPoM2Cokl=cene[kamenCokl][debljinaCokl];
+  }
+
+  let html=`
+    <table>
+      <tr>
+        <th>Kamen</th>
+        <th>Debljina</th>
+        <th>Element</th>
+        <th>Dimenzije / Količina</th>
+        <th>Površina (m²)</th>
+        <th>Cijena/m²</th>
+        <th>Ukupno (KM)</th>
+      </tr>
+  `;
+  let ukupno=0;
+
+  // Gazišta
+  let gTotal=parseInt(document.getElementById('gTotal').value)||0;
+  let gGroup=parseInt(document.getElementById('gGroup').value)||0;
+  let leftoverG=gTotal-gGroup;
+
+  if(gGroup>0){
+    let dVal=parseFloat(document.querySelector('.gGroupDuzina')?.value)||0;
+    let bVal=parseFloat(document.querySelector('.gGroupDubina')?.value)||0;
+    let m2jedno=(dVal*bVal)/10000;
+    let povrsinaUkup=m2jedno*gGroup;
+    let cijena=povrsinaUkup*cenaPoM2Gazista;
+    ukupno+=cijena;
+    html+=`
+      <tr>
+        <td>${kamenGazista}</td>
+        <td>${debljinaGazista} cm</td>
+        <td>Gazišta (grupa)</td>
+        <td>${gGroup} kom., ${dVal}x${bVal} cm</td>
+        <td>${povrsinaUkup.toFixed(2)}</td>
+        <td>${cenaPoM2Gazista}</td>
+        <td>${cijena.toFixed(2)}</td>
+      </tr>
+    `;
+  }
+  if(leftoverG>0){
+    let dArr=document.getElementsByClassName('gLeftoverDuzina');
+    let bArr=document.getElementsByClassName('gLeftoverDubina');
+    for(let i=0; i< leftoverG; i++){
+      let dd=parseFloat(dArr[i].value)||0;
+      let bb=parseFloat(bArr[i].value)||0;
+      let m2=(dd*bb)/10000;
+      let cijena=m2*cenaPoM2Gazista;
+      ukupno+=cijena;
+      html+=`
+        <tr>
+          <td>${kamenGazista}</td>
+          <td>${debljinaGazista} cm</td>
+          <td>Gazište ${i+1}</td>
+          <td>1 kom., ${dd}x${bb} cm</td>
+          <td>${m2.toFixed(2)}</td>
+          <td>${cenaPoM2Gazista}</td>
+          <td>${cijena.toFixed(2)}</td>
+        </tr>
+      `;
+    }
+  }
+
+  // Čela
+  if(imaCela){
+    let cTotal=parseInt(document.getElementById('cTotal').value)||0;
+    let cGroup=parseInt(document.getElementById('cGroup').value)||0;
+    let leftoverC=cTotal-cGroup;
+
+    if(cGroup>0){
+      let vVal=parseFloat(document.querySelector('.cGroupVisina')?.value)||0;
+      let dVal=parseFloat(document.querySelector('.cGroupDuzina')?.value)||0;
+      let m2jedno=(vVal*dVal)/10000;
+      let povrsinaUkup=m2jedno*cGroup;
+      let cijena=povrsinaUkup*cenaPoM2Cela;
+      ukupno+=cijena;
+      html+=`
+        <tr>
+          <td>${document.getElementById('kamenCela').value}</td>
+          <td>${document.getElementById('debljinaCela').value} cm</td>
+          <td>Čela (grupa)</td>
+          <td>${cGroup} kom., ${vVal}x${dVal} cm</td>
+          <td>${povrsinaUkup.toFixed(2)}</td>
+          <td>${cenaPoM2Cela}</td>
+          <td>${cijena.toFixed(2)}</td>
+        </tr>
+      `;
+    }
+    if(leftoverC>0){
+      let vArr=document.getElementsByClassName('cLeftoverVisina');
+      let dArr=document.getElementsByClassName('cLeftoverDuzina');
+      for(let i=0;i< leftoverC;i++){
+        let vv=parseFloat(vArr[i].value)||0;
+        let dd=parseFloat(dArr[i].value)||0;
+        let m2=(vv*dd)/10000;
+        let cijena=m2*cenaPoM2Cela;
+        ukupno+=cijena;
+        html+=`
+          <tr>
+            <td>${document.getElementById('kamenCela').value}</td>
+            <td>${document.getElementById('debljinaCela').value} cm</td>
+            <td>Čelo ${i+1}</td>
+            <td>${vv}x${dd} cm</td>
+            <td>${m2.toFixed(2)}</td>
+            <td>${cenaPoM2Cela}</td>
+            <td>${cijena.toFixed(2)}</td>
+          </tr>
+        `;
+      }
+    }
+  }
+
+  // Podest
+  let totalPodestDimension=0;
+  if(imaPodest){
+    let kamenPodest=document.getElementById('kamenPodest').value;
+    let debljinaPodest=document.getElementById('debljinaPodest').value;
+    let cPodest=cene[kamenPodest][debljinaPodest];
+
+    let pTotal=parseInt(document.getElementById('pTotal').value)||0;
+    let pGroup=parseInt(document.getElementById('pGroup').value)||0;
+    let leftoverP=pTotal-pGroup;
+
+    if(pGroup>0){
+      let dVal=parseFloat(document.querySelector('.pGroupDuzina')?.value)||0;
+      let sVal=parseFloat(document.querySelector('.pGroupSirina')?.value)||0;
+      let m2jedno=(dVal*sVal)/10000;
+      let povrsinaUkup=m2jedno*pGroup;
+      let cijena=povrsinaUkup*cPodest;
+      ukupno+=cijena;
+      html+=`
+        <tr>
+          <td>${kamenPodest}</td>
+          <td>${debljinaPodest} cm</td>
+          <td>Podest (grupa)</td>
+          <td>${pGroup} kom., ${dVal}x${sVal} cm</td>
+          <td>${povrsinaUkup.toFixed(2)}</td>
+          <td>${cPodest}</td>
+          <td>${cijena.toFixed(2)}</td>
+        </tr>
+      `;
+      totalPodestDimension+=(dVal+sVal)*pGroup;
+    }
+    if(leftoverP>0){
+      let dArr=document.getElementsByClassName('pLeftoverDuzina');
+      let sArr=document.getElementsByClassName('pLeftoverSirina');
+      for(let i=0;i< leftoverP;i++){
+        let dd=parseFloat(dArr[i].value)||0;
+        let ss=parseFloat(sArr[i].value)||0;
+        let m2=(dd*ss)/10000;
+        let cijena=m2*cPodest;
+        ukupno+=cijena;
+        html+=`
+          <tr>
+            <td>${kamenPodest}</td>
+            <td>${debljinaPodest} cm</td>
+            <td>Podest ${i+1}</td>
+            <td>${dd}x${ss} cm</td>
+            <td>${m2.toFixed(2)}</td>
+            <td>${cPodest}</td>
+            <td>${cijena.toFixed(2)}</td>
+          </tr>
+        `;
+        totalPodestDimension+=(dd+ss);
+      }
+    }
+  }
+
+  // Cokl
+  if(imaCokl){
+    let kamenCokl=document.getElementById('kamenCokl').value;
+    let debljinaCokl=document.getElementById('debljinaCokl').value;
+    let cCokl=cene[kamenCokl][debljinaCokl];
+    let coklNacin=document.getElementById('coklNacin').value;
+    let coklSides=parseInt(document.getElementById('coklSides').value)||1;
+    let coklVisinaVal=parseFloat(document.getElementById('coklVisina').value)||0;
+
+    let baseCoklLength=0;
+    if(coklNacin==='auto'){
+      // sabiramo duz gazista + visine cela + (duz+sir) podesta
+      let gSum=0;
+      let gTotal=parseInt(document.getElementById('gTotal').value)||0;
+      let gGroup=parseInt(document.getElementById('gGroup').value)||0;
+      let leftoverG=gTotal-gGroup;
+      if(gGroup>0){
+        let dVal=parseFloat(document.querySelector('.gGroupDuzina')?.value)||0;
+        gSum+=(dVal*gGroup);
+      }
+      if(leftoverG>0){
+        let dArr=document.getElementsByClassName('gLeftoverDuzina');
+        for(let i=0; i< leftoverG;i++){
+          let dd=parseFloat(dArr[i].value)||0;
+          gSum+=dd;
+        }
+      }
+      let cSum=0;
+      if(imaCela){
+        let cTotal=parseInt(document.getElementById('cTotal').value)||0;
+        let cGroup=parseInt(document.getElementById('cGroup').value)||0;
+        let leftoverC=cTotal-cGroup;
+        if(cGroup>0){
+          let vVal=parseFloat(document.querySelector('.cGroupVisina')?.value)||0;
+          cSum+=(vVal*cGroup);
+        }
+        if(leftoverC>0){
+          let vArr=document.getElementsByClassName('cLeftoverVisina');
+          for(let i=0;i< leftoverC;i++){
+            let vv=parseFloat(vArr[i].value)||0;
+            cSum+=vv;
+          }
+        }
+      }
+      baseCoklLength=gSum+cSum+totalPodestDimension;
+    } else {
+      let manualLen=parseFloat(document.getElementById('coklManualLength').value)||0;
+      baseCoklLength=manualLen;
+    }
+    if(coklSides===2){
+      baseCoklLength*=2;
+    }
+
+    let areaCokl=(baseCoklLength*coklVisinaVal)/10000;
+    let cijenaCokl=areaCokl*cCokl;
+    ukupno+=cijenaCokl;
+
+    html+=`
+      <tr>
+        <td>${kamenCokl}</td>
+        <td>${debljinaCokl} cm</td>
+        <td>Cokl</td>
+        <td>Dužina=${baseCoklLength.toFixed(1)} cm, Visina=${coklVisinaVal} cm</td>
+        <td>${areaCokl.toFixed(2)}</td>
+        <td>${cCokl}</td>
+        <td>${cijenaCokl.toFixed(2)}</td>
+      </tr>
+    `;
+  }
+
+  // Završni red
+  html+=`
+    <tr>
+      <td colspan="6" style="text-align:right"><b>Ukupno</b></td>
+      <td><b>${ukupno.toFixed(2)} KM</b></td>
+    </tr>
+  </table>
+  `;
+  document.getElementById('rezultatStepenice').innerHTML=html;
+}
+</script>
+
+</body>
+</html>
